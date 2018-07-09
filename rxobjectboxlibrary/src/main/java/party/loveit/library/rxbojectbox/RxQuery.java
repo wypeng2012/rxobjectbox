@@ -17,19 +17,9 @@ package party.loveit.library.rxbojectbox;
 import java.util.List;
 
 import io.objectbox.query.Query;
-import io.objectbox.reactive.DataObserver;
-import io.objectbox.reactive.DataSubscription;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.reactivex.SingleOnSubscribe;
-import io.reactivex.functions.Cancellable;
 
 /**
  * Static methods to Rx-ify ObjectBox queries.
@@ -39,14 +29,14 @@ public abstract class RxQuery {
      * The returned Flowable emits Query results one by one. Once all results have been processed, onComplete is called.
      * Uses BackpressureStrategy.BUFFER.
      */
-    public static <T> Flowable<T> flowableOneByOne(final Query<T> query) {
+    /*public static <T> Flowable<T> flowableOneByOne(final Query<T> query) {
         return flowableOneByOne(query, BackpressureStrategy.BUFFER);
     }
 
-    /**
+    *//**
      * The returned Flowable emits Query results one by one. Once all results have been processed, onComplete is called.
      * Uses given BackpressureStrategy.
-     */
+     *//*
     public static <T> Flowable<T> flowableOneByOne(final Query<T> query, BackpressureStrategy strategy) {
         return Flowable.create(new FlowableOnSubscribe<T>() {
             @Override
@@ -76,15 +66,16 @@ public abstract class RxQuery {
         emitter.setCancellable(new Cancellable() {
             @Override
             public void cancel() throws Exception {
-                dataSubscription.cancel();
+                if (dataSubscription != null)
+                    dataSubscription.cancel();
             }
         });
     }
 
-    /**
+    *//**
      * The returned Observable emits Query results as Lists.
      * Never completes, so you will get updates when underlying data changes.
-     */
+     *//*
     public static <T> Observable<List<T>> observable(final Query<T> query) {
         return Observable.create(new ObservableOnSubscribe<List<T>>() {
             @Override
@@ -100,16 +91,19 @@ public abstract class RxQuery {
                 emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
-                        dataSubscription.cancel();
+                        if (dataSubscription != null)
+                            dataSubscription.cancel();
                     }
                 });
             }
         });
     }
 
+    */
+
     /**
      * The returned Single emits one Query result as a List.
-     */
+     *//*
     public static <T> Single<List<T>> single(final Query<T> query) {
         return Single.create(new SingleOnSubscribe<List<T>>() {
             @Override
@@ -125,10 +119,97 @@ public abstract class RxQuery {
                 emitter.setCancellable(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
-                        dataSubscription.cancel();
+                        if (dataSubscription != null)
+                            dataSubscription.cancel();
                     }
                 });
             }
         });
+    }*/
+
+    /**
+     * @param query
+     * @param <T>
+     * @return
+     */
+    public static <T> Single<List<T>> find(final Query<T> query) {
+        return Single.create(new SingleOnSubscribe<List<T>>() {
+            @Override
+            public void subscribe(SingleEmitter<List<T>> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    List<T> data = query.find();
+                    if (data != null)
+                        emitter.onSuccess(data);
+                    else
+                        emitter.onError(new NoDataException(" the data is null"));
+                }
+            }
+        });
     }
+
+    /**
+     * 分页查询
+     * @param query
+     * @param offset
+     * @param limit
+     * @param <T>
+     * @return
+     */
+    public static <T> Single<List<T>> find(final Query<T> query, final long offset, final long limit) {
+        return Single.create(new SingleOnSubscribe<List<T>>() {
+            @Override
+            public void subscribe(SingleEmitter<List<T>> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    List<T> data = query.find(offset, limit);
+                    if (data != null)
+                        emitter.onSuccess(data);
+                    else
+                        emitter.onError(new NoDataException(" the data is null"));
+                }
+            }
+        });
+    }
+
+    /**
+     *
+     * @param query
+     * @param <T>
+     * @return
+     */
+    public static <T> Single<T> findFirst(final Query<T> query) {
+        return Single.create(new SingleOnSubscribe<T>() {
+            @Override
+            public void subscribe(SingleEmitter<T> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    T data = query.findFirst();
+                    if (data != null)
+                        emitter.onSuccess(data);
+                    else
+                        emitter.onError(new NoDataException(" the data is null"));
+                }
+            }
+        });
+    }
+
+    /**
+     *
+     * @param query
+     * @param <T>
+     * @return
+     */
+    public static <T> Single<T> findUnique(final Query<T> query) {
+        return Single.create(new SingleOnSubscribe<T>() {
+            @Override
+            public void subscribe(SingleEmitter<T> emitter) throws Exception {
+                if (!emitter.isDisposed()) {
+                    T data = query.findUnique();
+                    if (data != null)
+                        emitter.onSuccess(data);
+                    else
+                        emitter.onError(new NoDataException(" the data is null"));
+                }
+            }
+        });
+    }
+
 }

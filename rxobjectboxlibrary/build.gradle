@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'io.objectbox'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-version = "1.0.0"
+version = "1.0.2"
 
 android {
     compileSdkVersion 27
@@ -12,8 +12,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0.0"
+        versionCode 3
+        versionName "1.0.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -50,7 +50,7 @@ install {
         // This generates POM.xml with proper parameters
         pom {
             project {
-                packaging 'jar'//或者aar
+                packaging 'aar'
                 name 'RxJava extension for ObjectBox'
                 url siteUrl
                 licenses {
